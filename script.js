@@ -90,10 +90,10 @@ const displayMovements = function (acc, sort = false) {
         <div class="movements__date">${displayDate}</div>
         <div class="movements__value">${mov}€</div>
       </div>
-    `
+    `;
 
     containerMovements.insertAdjacentHTML('afterbegin', html);
-  })
+  });
 };
 
 const calcDisplayBalance = function (acc) {
@@ -144,21 +144,30 @@ const updateUI = function (acc) {
 };
 
 const startLogOutTimer = function() {
+  const tick = function () {
+    const min = String(Math.trunc(time / 60)).padStart(2, 0);
+    const sec = String(time % 60).padStart(2, 0);
+    // IN each call, print the remaining time to UI
+    labelTimer.textContent = `${min}:${sec}`;
+    
+    // When 0 seconds, stop timer and log out user 
+    if (time === 0) {
+      clearInterval(timer);
+      labelWelcome.textContent = `Log in to get started`;
+      containerApp.style.opacity = 0;
+    }
+
+    // Decrease timer
+    time--;
+  };
   // Set time to 5 minutes
-
+  let time = 30;
   // Call the timer every second
+  const timer = setInterval(tick, 1000)
+  return timer;
+};
 
-  // IN each call, print the remaining time to UI
-
-  // When 0 seconds, stop timer and log out user 
-}
-
-let currentAccount;
-
-// FAKE LOGIN
-currentAccount = account1;
-updateUI(currentAccount);
-containerApp.style.opacity = 100;
+let currentAccount, timer;
 
 // Event handlers
 btnLogin.addEventListener('click', function (e) {
@@ -185,6 +194,10 @@ btnLogin.addEventListener('click', function (e) {
     inputLoginUsername.value = inputLoginPin.value = '';
     // Input blur
     inputLoginPin.blur();
+
+    // Timer
+    if (timer) clearInterval(timer);
+    timer = startLogOutTimer();
     
     updateUI(currentAccount);
   };
@@ -213,6 +226,10 @@ btnTransfer.addEventListener('click', function (e) {
 
     // Update UI
     updateUI(currentAccount);
+
+    // Reset Timer
+    clearInterval(timer);
+    timer = startLogOutTimer();
   }
 });
 
@@ -227,8 +244,13 @@ btnLoan.addEventListener('click', function (e) {
 
       // Add date to loan
       currentAccount.movementsDates.push(new Date());
+
       // Update UI
       updateUI(currentAccount)
+
+      // Reset timer
+      clearInterval(timer);
+      timer = startLogOutTimer();
     }, 2500);
   }
   inputLoanAmount.value = '';
@@ -251,14 +273,3 @@ btnSort.addEventListener('click', function (e) {
   displayMovements(currentAccount.movements, !sorted);
   sorted = !sorted;
 });
-
-// const ingredients = ['olives', 'spinach'];
-
-// const pizzaTimer = setTimeout((ing1, ing2) => console.log(`Here is your pizza with ${ing1} and ${ing2}!`), 3000, ...ingredients);
-
-// if (ingredients.includes('spinach')) clearTimeout (pizzaTimer);
-
-// setInterval(function() {
-//   const now = new Date();
-//   console.log(now);
-// }, 3000);
